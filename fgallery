@@ -81,7 +81,9 @@ sub sys
   my @cmd = @_;
 
   if($verbose) {
-    print(STDERR "+ " . join(" ", @cmd) . "\n")
+    my @cmdtail = @cmd;
+    my $cmdhead = shift(@cmdtail);
+    print(STDERR $cmdhead . " '" . join("' '", @cmdtail) . "'\n")
   }
 
   my $fd;
@@ -489,8 +491,8 @@ my @backsize = (int($minthumb[0] * 4), int($minthumb[1] * 3));
 # cleanup target paths
 for my $path("$out/thumbs", "$out/blurs", "$out/imgs", "$out/files")
 {
-  remove_tree($path);
-  make_path($path);
+  sys("rm", "-rf", $path);
+  sys("mkdir", $path);
 }
 
 # disable sub-process parallelism when threading ourselves
