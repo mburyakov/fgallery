@@ -629,6 +629,25 @@ foreach my $props(@aprops)
 }
 $amp /= @files;
 
+sub calcshrink
+{
+  my @sfile = @_;
+  while ($sfile[0] >= 2*$maxfull[0] || $sfile[1] >= 2*$maxfull[1]) {
+    $sfile[0] = $sfile[0]/2;
+    $sfile[1] = $sfile[1]/2;
+  }
+  if (2*$sfile[0] >= 3*$maxfull[0] || 2*$sfile[1] >= 3*$maxfull[1]) {
+    $sfile[0] = $sfile[0]*2/3;
+    $sfile[1] = $sfile[1]*2/3;
+  } elsif (4*$sfile[0] >= 5*$maxfull[0] || 4*$sfile[1] >= 5*$maxfull[1]) {
+    $sfile[0] = $sfile[0]*4/5;
+    $sfile[1] = $sfile[1]*4/5;
+  }
+  $sfile[0] = int($sfile[0]);
+  $sfile[1] = int($sfile[1]);
+  return @sfile;
+}
+
 # 2nd pass: produce output files
 sub process_img
 {
@@ -693,13 +712,13 @@ sub process_img
 
   # generate main image
   my @sfile = ($props{ImageWidth}, $props{ImageHeight});
-  my @simg = sys('convert', '-quiet', $ftmp,
-		 '-gamma', '0.454545',
-		 '-geometry', "$maxfull[0]x$maxfull[1]>",
-		 '-print', '%w\n%h',
-		 '-gamma', '2.2',
-		 '+profile', '!icc,*',
-		 '-quality', $imgq, "$out/$fimg");
+  my @simg = calcshrink(@sfile);
+  sys('convert', '-quiet', $ftmp,
+    '-gamma', '0.454545',
+    '-geometry', "$simg[0]x$simg[1]!",
+    '-gamma', '2.2',
+    '+profile', '!icc,*',
+    '-quality', $imgq, "$out/$fimg");
 
   # face/center detection
   my @center = (0.5, 0.5);
