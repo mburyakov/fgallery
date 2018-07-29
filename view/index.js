@@ -8,7 +8,7 @@ var padding = 22;
 var duration = 500;
 var thrdelay = 1500;
 var hidedelay = 3000;
-var prefetch = 1;
+var prefetch = 8;
 var minupscale = 640 * 480;
 var thumbrt = 16/9 - 5/3;
 var cutrt = 0.15;
@@ -553,10 +553,20 @@ function onMainReady()
   centerThumb(d);
 
   // prefetch next image
-  if(prefetch && sdir != 0)
+  if(prefetch > 0 && sdir != 0)
   {
-    var data = imgs.data[umod(eidx + sdir, imgs.data.length)];
-    Asset.images([data.img[0], data.blur]);
+    var tmpar = [...Array(prefetch).keys()];
+    var indices = tmpar.map(function(index) {
+      return umod(eidx + index * sdir, imgs.data.length);
+    });
+    var data = indices.reduce(function(acc, index) {
+      return acc.concat([imgs.data[index].img[0], imgs.data[index].blur]);
+    }, []);
+    Asset.images(data, {
+      onComplete: function(){
+        //setTimeout(() => alert('images is loaded!'), 2000)
+      }
+    });
   }
 }
 
